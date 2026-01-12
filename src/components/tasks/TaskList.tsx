@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
-import { Task, TaskFilters, Project, SavedView, TaskPriority } from '@/lib/types';
+import { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Task, TaskFilters, Project, SavedView, TaskPriority, TaskStatus } from '@/lib/types';
 import TaskCard from './TaskCard';
 import TaskFiltersComponent from './TaskFilters';
 import BulkActions from './BulkActions';
 import TaskEditModal from './TaskEditModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ListTodo } from 'lucide-react';
+import { isToday, isPast, isThisWeek, parseISO, format } from 'date-fns';
 
 interface TaskListProps {
   tasks: Task[];
@@ -38,11 +40,47 @@ export default function TaskList({
   onLoadView,
   onDeleteView,
 }: TaskListProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<TaskFilters>({});
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // Handle URL-based filters from dashboard
+  useEffect(() => {
+    const filterType = searchParams.get('filter');
+    const statusParam = searchParams.get('status');
+    const priorityParam = searchParams.get('priority');
+
+    if (filterType) {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      
+      if (filterType === 'overdue') {
+        setFilters({ due_date_to: today, status: ['todo', 'in_progress'] });
+      } else if (filterType === 'today') {
+        setFilters({ due_date_from: today, due_date_to: today, status: ['todo', 'in_progress'] });
+      } else if (filterType === 'week') {
+        setFilters({ status: ['todo', 'in_progress'] });
+        setSortBy('due_date');
+        setSortOrder('asc');
+      } else if (filterType === 'done') {
+        setFilters({ status: ['done'] });
+      }
+      // Clear the URL params after applying
+      setSearchParams({});
+    }
+
+    if (statusParam) {
+      setFilters({ status: [statusParam as TaskStatus] });
+      setSearchParams({});
+    }
+
+    if (priorityParam) {
+      setFilters({ priority: [priorityParam as TaskPriority] });
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
@@ -126,6 +164,11 @@ export default function TaskList({
     setSelectedIds(new Set());
   };
 
+  const handleBulkAssignProject = (projectId: string | null) => {
+    onUpdateTasks(Array.from(selectedIds), { project_id: projectId });
+    setSelectedIds(new Set());
+  };
+
   const handleBulkDelete = () => {
     if (confirm(`Delete ${selectedIds.size} tasks?`)) {
       onDeleteTasks(Array.from(selectedIds));
@@ -181,8 +224,10 @@ export default function TaskList({
 
       <BulkActions
         selectedCount={selectedIds.size}
+        projects={projects}
         onMarkDone={handleBulkMarkDone}
         onChangePriority={handleBulkChangePriority}
+        onAssignProject={handleBulkAssignProject}
         onDelete={handleBulkDelete}
         onClearSelection={() => setSelectedIds(new Set())}
       />
