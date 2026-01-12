@@ -11,6 +11,7 @@ export interface Task {
   due_date: string | null;
   project_id: string | null;
   tags: string[];
+  assigned_to: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -52,6 +53,7 @@ export interface TaskFilters {
   due_date_from?: string;
   due_date_to?: string;
   search?: string;
+  assigned_to?: string;
 }
 
 export interface Profile {

@@ -24,6 +24,16 @@ export default function Reports() {
     to: endOfMonth(new Date()),
   });
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
+
+  // Get unique assignees
+  const assignees = useMemo(() => {
+    const uniqueAssignees = new Set<string>();
+    tasks.forEach(t => {
+      if (t.assigned_to) uniqueAssignees.add(t.assigned_to);
+    });
+    return Array.from(uniqueAssignees).sort();
+  }, [tasks]);
 
   if (!loading && !user) {
     navigate('/auth', { replace: true });
@@ -35,12 +45,13 @@ export default function Reports() {
       const taskDate = parseISO(task.created_at);
       const inRange = isWithinInterval(taskDate, { start: dateRange.from, end: dateRange.to });
       const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-      return inRange && matchesStatus;
+      const matchesAssignee = assigneeFilter === 'all' || task.assigned_to === assigneeFilter;
+      return inRange && matchesStatus && matchesAssignee;
     });
-  }, [tasks, dateRange, statusFilter]);
+  }, [tasks, dateRange, statusFilter, assigneeFilter]);
 
   const exportCSV = () => {
-    const headers = ['Title', 'Status', 'Priority', 'Due Date', 'Project', 'Created', 'Completed'];
+    const headers = ['Title', 'Status', 'Priority', 'Due Date', 'Project', 'Assigned To', 'Created', 'Completed'];
     const projectMap = new Map(projects.map(p => [p.id, p.name]));
     
     const rows = filteredTasks.map(t => [
@@ -49,6 +60,7 @@ export default function Reports() {
       t.priority,
       t.due_date || '',
       t.project_id ? projectMap.get(t.project_id) || '' : '',
+      t.assigned_to || '',
       format(parseISO(t.created_at), 'yyyy-MM-dd'),
       t.completed_at ? format(parseISO(t.completed_at), 'yyyy-MM-dd') : '',
     ]);
@@ -116,6 +128,20 @@ export default function Reports() {
                 <SelectItem value="todo">To Do</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="done">Done</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All assignees</SelectItem>
+                {assignees.map((assignee) => (
+                  <SelectItem key={assignee} value={assignee}>
+                    {assignee}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </CardContent>

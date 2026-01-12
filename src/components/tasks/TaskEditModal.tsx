@@ -67,6 +67,7 @@ export default function TaskEditModal({
   const [projectId, setProjectId] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [assignedTo, setAssignedTo] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function TaskEditModal({
       setDueDate(task.due_date ? new Date(task.due_date) : undefined);
       setProjectId(task.project_id);
       setTags(task.tags || []);
+      setAssignedTo(task.assigned_to || '');
     }
   }, [task]);
 
@@ -98,6 +100,7 @@ export default function TaskEditModal({
         due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
         project_id: projectId,
         tags,
+        assigned_to: assignedTo.trim() || null,
         completed_at: wasNotDone && isNowDone ? new Date().toISOString() : task.completed_at,
       });
       onClose();
@@ -230,6 +233,15 @@ export default function TaskEditModal({
             </div>
           </div>
           
+          <div className="space-y-2">
+            <Label>Assigned To</Label>
+            <Input
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              placeholder="Enter assignee name..."
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>Tags</Label>
             <div className="flex flex-wrap gap-2 mb-2">

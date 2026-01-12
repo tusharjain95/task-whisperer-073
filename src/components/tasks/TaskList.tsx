@@ -52,6 +52,7 @@ export default function TaskList({
     const filterType = searchParams.get('filter');
     const statusParam = searchParams.get('status');
     const priorityParam = searchParams.get('priority');
+    const assigneeParam = searchParams.get('assignee');
 
     if (filterType) {
       const today = format(new Date(), 'yyyy-MM-dd');
@@ -78,6 +79,11 @@ export default function TaskList({
 
     if (priorityParam) {
       setFilters({ priority: [priorityParam as TaskPriority] });
+      setSearchParams({});
+    }
+
+    if (assigneeParam) {
+      setFilters({ assigned_to: assigneeParam === 'Unassigned' ? undefined : assigneeParam });
       setSearchParams({});
     }
   }, [searchParams, setSearchParams]);
@@ -109,6 +115,9 @@ export default function TaskList({
     }
     if (filters.due_date_to) {
       result = result.filter((t) => t.due_date && t.due_date <= filters.due_date_to!);
+    }
+    if (filters.assigned_to) {
+      result = result.filter((t) => t.assigned_to === filters.assigned_to);
     }
 
     // Apply sorting
@@ -188,6 +197,15 @@ export default function TaskList({
     [projects]
   );
 
+  // Get unique assignees from tasks
+  const assignees = useMemo(() => {
+    const uniqueAssignees = new Set<string>();
+    tasks.forEach(t => {
+      if (t.assigned_to) uniqueAssignees.add(t.assigned_to);
+    });
+    return Array.from(uniqueAssignees).sort();
+  }, [tasks]);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -220,6 +238,7 @@ export default function TaskList({
         onSaveView={(name) => onSaveView(name, filters, sortBy, sortOrder)}
         onLoadView={handleLoadView}
         onDeleteView={onDeleteView}
+        assignees={assignees}
       />
 
       <BulkActions

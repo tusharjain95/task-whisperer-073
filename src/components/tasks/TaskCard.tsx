@@ -2,7 +2,7 @@ import { Task, Project } from '@/lib/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Flag, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Calendar, Flag, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -150,6 +150,13 @@ export default function TaskCard({
               }}
             >
               {project.name}
+            </Badge>
+          )}
+
+          {task.assigned_to && (
+            <Badge variant="outline" className="text-xs">
+              <User className="mr-1 h-3 w-3" />
+              {task.assigned_to}
             </Badge>
           )}
           

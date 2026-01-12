@@ -5,7 +5,8 @@ import { useTasks } from '@/hooks/useTasks';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isToday, isPast, isThisWeek, parseISO } from 'date-fns';
-import { AlertCircle, Calendar, CheckCircle2, Clock, ListTodo, TrendingUp } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertCircle, Calendar, CheckCircle2, Clock, ListTodo, TrendingUp, Users } from 'lucide-react';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -35,7 +36,22 @@ export default function Dashboard() {
       low: tasks.filter(t => t.priority === 'low' && t.status !== 'done').length,
     };
 
-    return { overdue, dueToday, dueThisWeek, byStatus, byPriority, total: tasks.length };
+    // Group by assignee
+    const byAssignee: { [key: string]: { total: number; pending: number; done: number } } = {};
+    tasks.forEach(t => {
+      const assignee = t.assigned_to || 'Unassigned';
+      if (!byAssignee[assignee]) {
+        byAssignee[assignee] = { total: 0, pending: 0, done: 0 };
+      }
+      byAssignee[assignee].total++;
+      if (t.status === 'done') {
+        byAssignee[assignee].done++;
+      } else {
+        byAssignee[assignee].pending++;
+      }
+    });
+
+    return { overdue, dueToday, dueThisWeek, byStatus, byPriority, byAssignee, total: tasks.length };
   }, [tasks]);
 
   if (loading || isLoading) {
@@ -168,6 +184,42 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Tasks by Assignee */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Tasks by Assignee
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[200px]">
+              <div className="space-y-3">
+                {Object.entries(stats.byAssignee)
+                  .sort((a, b) => b[1].total - a[1].total)
+                  .map(([assignee, data]) => (
+                    <div 
+                      key={assignee} 
+                      className="flex items-center gap-3 p-2 -mx-2 rounded-md cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => navigate(`/?assignee=${encodeURIComponent(assignee)}`)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
+                        {assignee.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{assignee}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {data.pending} pending · {data.done} done
+                        </p>
+                      </div>
+                      <span className="font-medium text-sm">{data.total}</span>
+                    </div>
+                  ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );
