@@ -6,6 +6,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useSavedViews } from '@/hooks/useSavedViews';
 import AppLayout from '@/components/layout/AppLayout';
 import QuickAddTask from '@/components/tasks/QuickAddTask';
+import QuickAddProject from '@/components/projects/QuickAddProject';
 import TaskList from '@/components/tasks/TaskList';
 import { toast } from 'sonner';
 
@@ -42,12 +43,15 @@ export default function Index() {
   return (
     <AppLayout>
       <div className="p-4 lg:p-8 max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
-          <p className="text-muted-foreground">Manage your tasks and stay productive</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
+            <p className="text-muted-foreground">Manage your tasks and stay productive</p>
+          </div>
+          <QuickAddProject />
         </div>
         
-        <QuickAddTask />
+        <QuickAddTask projects={projects} />
         
         <TaskList
           tasks={tasks}

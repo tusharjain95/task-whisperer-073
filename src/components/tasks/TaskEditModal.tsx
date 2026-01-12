@@ -28,6 +28,8 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarIcon, X, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import TaskComments from './TaskComments';
 
 interface TaskEditModalProps {
   task: Task | null;
@@ -118,7 +120,7 @@ export default function TaskEditModal({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
@@ -253,6 +255,14 @@ export default function TaskEditModal({
               </Button>
             </div>
           </div>
+
+          {/* Comments section */}
+          {task && (
+            <>
+              <Separator className="my-4" />
+              <TaskComments taskId={task.id} />
+            </>
+          )}
         </div>
         
         <DialogFooter>
