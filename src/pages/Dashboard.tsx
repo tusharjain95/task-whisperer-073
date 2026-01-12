@@ -57,43 +57,59 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-destructive/20 bg-destructive/5">
+          <Card 
+            className="border-destructive/20 bg-destructive/5 cursor-pointer hover:bg-destructive/10 transition-colors"
+            onClick={() => navigate('/?filter=overdue')}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Overdue</CardTitle>
               <AlertCircle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-destructive">{stats.overdue.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Click to view</p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card 
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/?filter=today')}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Due Today</CardTitle>
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.dueToday.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Click to view</p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card 
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/?filter=week')}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Due This Week</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.dueThisWeek.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Click to view</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-status-done/5 border-status-done/20">
+          <Card 
+            className="bg-status-done/5 border-status-done/20 cursor-pointer hover:bg-status-done/10 transition-colors"
+            onClick={() => navigate('/?filter=done')}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Completed</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-status-done" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-status-done">{stats.byStatus.done}</div>
+              <p className="text-xs text-muted-foreground mt-1">Click to view</p>
             </CardContent>
           </Card>
         </div>
@@ -108,11 +124,15 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { label: 'To Do', value: stats.byStatus.todo, color: 'bg-status-todo' },
-                { label: 'In Progress', value: stats.byStatus.in_progress, color: 'bg-status-in-progress' },
-                { label: 'Done', value: stats.byStatus.done, color: 'bg-status-done' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="flex items-center gap-3">
+                { label: 'To Do', value: stats.byStatus.todo, color: 'bg-status-todo', filter: 'todo' },
+                { label: 'In Progress', value: stats.byStatus.in_progress, color: 'bg-status-in-progress', filter: 'in_progress' },
+                { label: 'Done', value: stats.byStatus.done, color: 'bg-status-done', filter: 'done' },
+              ].map(({ label, value, color, filter }) => (
+                <div 
+                  key={label} 
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-md cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => navigate(`/?status=${filter}`)}
+                >
                   <div className={`w-3 h-3 rounded-full ${color}`} />
                   <span className="flex-1 text-sm">{label}</span>
                   <span className="font-medium">{value}</span>
@@ -130,12 +150,16 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { label: 'Urgent', value: stats.byPriority.urgent, color: 'bg-priority-urgent' },
-                { label: 'High', value: stats.byPriority.high, color: 'bg-priority-high' },
-                { label: 'Medium', value: stats.byPriority.medium, color: 'bg-priority-medium' },
-                { label: 'Low', value: stats.byPriority.low, color: 'bg-priority-low' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="flex items-center gap-3">
+                { label: 'Urgent', value: stats.byPriority.urgent, color: 'bg-priority-urgent', filter: 'urgent' },
+                { label: 'High', value: stats.byPriority.high, color: 'bg-priority-high', filter: 'high' },
+                { label: 'Medium', value: stats.byPriority.medium, color: 'bg-priority-medium', filter: 'medium' },
+                { label: 'Low', value: stats.byPriority.low, color: 'bg-priority-low', filter: 'low' },
+              ].map(({ label, value, color, filter }) => (
+                <div 
+                  key={label} 
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-md cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => navigate(`/?priority=${filter}`)}
+                >
                   <div className={`w-3 h-3 rounded-full ${color}`} />
                   <span className="flex-1 text-sm">{label}</span>
                   <span className="font-medium">{value}</span>
