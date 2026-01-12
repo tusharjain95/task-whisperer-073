@@ -27,6 +27,7 @@ export default function QuickAddTask({ projects }: QuickAddTaskProps) {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [assignedTo, setAssignedTo] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const { createTask } = useTasks();
@@ -45,6 +46,7 @@ export default function QuickAddTask({ projects }: QuickAddTaskProps) {
         due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
         project_id: projectId,
         tags,
+        assigned_to: assignedTo.trim() || null,
       });
       // Reset form
       setTitle('');
@@ -54,6 +56,7 @@ export default function QuickAddTask({ projects }: QuickAddTaskProps) {
       setDueDate(undefined);
       setProjectId(null);
       setTags([]);
+      setAssignedTo('');
       setIsExpanded(false);
       toast.success('Task created');
     } catch (error) {
@@ -117,8 +120,8 @@ export default function QuickAddTask({ projects }: QuickAddTaskProps) {
             disabled={isAdding}
           />
 
-          {/* Status, Priority, Due Date, Project - 2x2 grid on mobile, row on desktop */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Status, Priority, Due Date, Project, Assigned To */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
               <SelectTrigger className="bg-secondary/50">
                 <SelectValue placeholder="Status" />
@@ -184,6 +187,14 @@ export default function QuickAddTask({ projects }: QuickAddTaskProps) {
                 ))}
               </SelectContent>
             </Select>
+
+            <Input
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              placeholder="Assigned to..."
+              className="bg-secondary/50"
+              disabled={isAdding}
+            />
           </div>
 
           {/* Tags */}

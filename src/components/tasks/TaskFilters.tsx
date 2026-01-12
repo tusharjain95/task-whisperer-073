@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Search, Filter, X, CalendarIcon, Save, Bookmark } from 'lucide-react';
+import { Search, Filter, X, CalendarIcon, Save, Bookmark, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +30,7 @@ interface TaskFiltersProps {
   onSaveView: (name: string) => void;
   onLoadView: (view: SavedView) => void;
   onDeleteView: (id: string) => void;
+  assignees: string[];
 }
 
 const statuses: TaskStatus[] = ['todo', 'in_progress', 'done'];
@@ -46,6 +47,7 @@ export default function TaskFilters({
   onSaveView,
   onLoadView,
   onDeleteView,
+  assignees,
 }: TaskFiltersProps) {
   const activeFilterCount = [
     filters.status?.length,
@@ -53,6 +55,7 @@ export default function TaskFilters({
     filters.project_id,
     filters.due_date_from,
     filters.due_date_to,
+    filters.assigned_to,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -294,6 +297,30 @@ export default function TaskFilters({
             />
           </PopoverContent>
         </Popover>
+
+        {/* Assignee Filter */}
+        <Select
+          value={filters.assigned_to || 'all'}
+          onValueChange={(value) => 
+            onFiltersChange({ ...filters, assigned_to: value === 'all' ? undefined : value })
+          }
+        >
+          <SelectTrigger className={cn(
+            'w-36 h-8 text-sm',
+            filters.assigned_to && 'bg-primary/10 border-primary/30'
+          )}>
+            <User className="h-3 w-3 mr-1" />
+            <SelectValue placeholder="Assignee" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All assignees</SelectItem>
+            {assignees.map((assignee) => (
+              <SelectItem key={assignee} value={assignee}>
+                {assignee}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
