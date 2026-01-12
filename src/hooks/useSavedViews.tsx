@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SavedView, TaskFilters } from '@/lib/types';
 import { useAuth } from './useAuth';
+import type { Json } from '@/integrations/supabase/types';
 
 export function useSavedViews() {
   const { user } = useAuth();
@@ -32,7 +33,13 @@ export function useSavedViews() {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('saved_views')
-        .insert([{ name: view.name, filters: view.filters as unknown as Record<string, unknown>, sort_by: view.sort_by, sort_order: view.sort_order, user_id: user.id }])
+        .insert([{ 
+          name: view.name, 
+          filters: JSON.parse(JSON.stringify(view.filters)) as Json, 
+          sort_by: view.sort_by, 
+          sort_order: view.sort_order, 
+          user_id: user.id 
+        }])
         .select()
         .single();
       
