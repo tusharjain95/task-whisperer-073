@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { Task, Project } from '@/lib/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Flag, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
+import { Calendar, Flag, MessageSquare, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -11,6 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useComments } from '@/hooks/useComments';
+import TaskCommentsModal from './TaskCommentsModal';
 
 interface TaskCardProps {
   task: Task;
@@ -51,6 +54,8 @@ export default function TaskCard({
   onEdit,
   onDelete,
 }: TaskCardProps) {
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const { comments } = useComments(task.id);
   const isOverdue = task.due_date && isPast(parseISO(task.due_date)) && task.status !== 'done';
   const isDone = task.status === 'done';
 
@@ -170,8 +175,26 @@ export default function TaskCard({
               +{task.tags.length - 2}
             </Badge>
           )}
+
+          {/* Comment count link */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCommentsOpen(true);
+            }}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors ml-auto"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            {comments.length > 0 ? `${comments.length}` : 'Add comment'}
+          </button>
         </div>
       </div>
+
+      <TaskCommentsModal
+        task={task}
+        open={commentsOpen}
+        onClose={() => setCommentsOpen(false)}
+      />
     </div>
   );
 }
