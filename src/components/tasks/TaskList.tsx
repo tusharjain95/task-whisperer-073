@@ -5,8 +5,10 @@ import TaskCard from './TaskCard';
 import TaskFiltersComponent from './TaskFilters';
 import BulkActions from './BulkActions';
 import TaskEditModal from './TaskEditModal';
+import KanbanBoard from './KanbanBoard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ListTodo } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ListTodo, LayoutGrid, List } from 'lucide-react';
 import { isToday, isPast, isThisWeek, parseISO, format } from 'date-fns';
 
 interface TaskListProps {
@@ -46,6 +48,7 @@ export default function TaskList({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   // Handle URL-based filters from dashboard
   useEffect(() => {
@@ -224,22 +227,46 @@ export default function TaskList({
 
   return (
     <div className="space-y-4">
-      <TaskFiltersComponent
-        filters={filters}
-        onFiltersChange={setFilters}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSortChange={(newSortBy, newSortOrder) => {
-          setSortBy(newSortBy);
-          setSortOrder(newSortOrder);
-        }}
-        projects={projects}
-        savedViews={savedViews}
-        onSaveView={(name) => onSaveView(name, filters, sortBy, sortOrder)}
-        onLoadView={handleLoadView}
-        onDeleteView={onDeleteView}
-        assignees={assignees}
-      />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <TaskFiltersComponent
+            filters={filters}
+            onFiltersChange={setFilters}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={(newSortBy, newSortOrder) => {
+              setSortBy(newSortBy);
+              setSortOrder(newSortOrder);
+            }}
+            projects={projects}
+            savedViews={savedViews}
+            onSaveView={(name) => onSaveView(name, filters, sortBy, sortOrder)}
+            onLoadView={handleLoadView}
+            onDeleteView={onDeleteView}
+            assignees={assignees}
+          />
+        </div>
+        <div className="flex items-center border rounded-lg p-1">
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className="h-8"
+          >
+            <List className="h-4 w-4 mr-1" />
+            List
+          </Button>
+          <Button
+            variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+            className="h-8"
+          >
+            <LayoutGrid className="h-4 w-4 mr-1" />
+            Kanban
+          </Button>
+        </div>
+      </div>
 
       <BulkActions
         selectedCount={selectedIds.size}
@@ -251,7 +278,15 @@ export default function TaskList({
         onClearSelection={() => setSelectedIds(new Set())}
       />
 
-      {filteredTasks.length === 0 ? (
+      {viewMode === 'kanban' ? (
+        <KanbanBoard
+          tasks={filteredTasks}
+          projects={projects}
+          onUpdateTask={onUpdateTask}
+          onDeleteTask={onDeleteTask}
+          onMarkComplete={onMarkComplete}
+        />
+      ) : filteredTasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <ListTodo className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <h3 className="text-lg font-medium text-foreground">No tasks found</h3>
